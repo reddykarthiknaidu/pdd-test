@@ -60,7 +60,7 @@ describe('Public Pages End‑to‑End Suite (50 Cases)', function () {
       }
     },
     { id: 6, desc: 'Verify live transit status badge is present', run: async () => {
-        const badge = await driver.findElement(By.className('bg-primary/10'));
+        const badge = await driver.findElement(By.xpath("//div[contains(text(), 'Live Chennai Transit')]"));
         assert.ok(badge, 'Live Chennai Transit badge should be present');
       }
     },
@@ -105,14 +105,14 @@ describe('Public Pages End‑to‑End Suite (50 Cases)', function () {
       }
     },
     { id: 15, desc: 'Verify sign-in navigation anchor target', run: async () => {
-        const loginLink = await driver.findElement(By.css('#login-button a'));
+        const loginLink = await driver.findElement(By.id('login-button'));
         const href = await loginLink.getAttribute('href');
         assert.ok(href.includes('/sign-in'), 'Sign-in anchor link should point to correct route');
       }
     },
     { id: 16, desc: 'Verify navigate to login page and display login form container', run: async () => {
         try {
-          const loginLink = await driver.findElement(By.css('#login-button a'));
+          const loginLink = await driver.findElement(By.id('login-button'));
           await loginLink.click();
         } catch (e) {
           await driver.get(`${baseUrl}/#/sign-in`);
