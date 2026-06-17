@@ -23,6 +23,8 @@ describe('Public Pages End‑to‑End Suite (50 Cases)', function () {
       .build();
 
     await driver.get(baseUrl);
+    // Wait for React to render the home page content
+    await driver.wait(until.elementLocated(By.css('[data-testid="button-get-started"]')), 15000);
   });
 
   after(async function () {
@@ -132,8 +134,8 @@ describe('Public Pages End‑to‑End Suite (50 Cases)', function () {
       }
     },
     { id: 19, desc: 'Verify Clerk sign-in header text placeholders', run: async () => {
-        const bodyText = await driver.findElement(By.tagName('body')).getText();
-        assert.ok(bodyText, 'Page body text should load');
+        const div = await driver.findElement(By.css('[data-testid="page-signin"]'));
+        assert.ok(await div.isDisplayed(), 'Sign-in page container should be visible');
       }
     },
     { id: 20, desc: 'Verify navigation to sign-up route works', run: async () => {
