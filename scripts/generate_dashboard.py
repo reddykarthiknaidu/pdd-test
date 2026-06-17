@@ -291,7 +291,7 @@ def main():
 </html>
 """
     with open("lifelink_test_report.html", "w", encoding="utf-8") as f:
-        f.write(html_content)
+        f.write(html_template)
     print("Beautiful Lifelink Test Dashboard Generated successfully.")
 
 if __name__ == "__main__":
