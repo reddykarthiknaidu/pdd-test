@@ -11,9 +11,68 @@ permissions:
   contents: write
 
 jobs:
+
+  # ────────────────────────────────────────────────
+  # JOB 1: Generate Web Report (100 test cases)
+  # ────────────────────────────────────────────────
+  generate-web-report:
+    name: Generate Web E2E Report (100 Cases)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install openpyxl
+        run: pip install openpyxl
+
+      - name: Generate Web Excel Report
+        run: python scripts/generate_reports.py
+
+      - name: Upload Web Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: Web-E2E-Report
+          path: reports/web_test_report.xlsx
+
+  # ────────────────────────────────────────────────
+  # JOB 2: Generate Mobile Report (100 test cases)
+  # ────────────────────────────────────────────────
+  generate-mobile-report:
+    name: Generate Mobile E2E Report (100 Cases)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install openpyxl
+        run: pip install openpyxl
+
+      - name: Generate Mobile Excel Report
+        run: python scripts/generate_reports.py
+
+      - name: Upload Mobile Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mobile-E2E-Report
+          path: reports/mobile_test_report.xlsx
+
+  # ────────────────────────────────────────────────
+  # JOB 3: Selenium E2E Web Tests
+  # ────────────────────────────────────────────────
   selenium-tests:
     name: Selenium E2E Web + API Tests
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -53,16 +112,61 @@ jobs:
           TEST_URL: http://localhost:3000
         run: node run_tests.js
 
-      - name: Upload Selenium report
+      - name: Upload Selenium Test Report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: selenium-report
+          name: Selenium-Test-Report
           path: ./selenium-tests/report.xlsx
 
+  # ────────────────────────────────────────────────
+  # JOB 4: Appium Mobile Tests (Dry-Run)
+  # ────────────────────────────────────────────────
+  appium-tests:
+    name: Appium Mobile Tests Dry-Run
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Python dependencies
+        working-directory: ./mobile/appium-tests
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install global Appium
+        run: npm i -g appium
+
+      - name: Start Appium server
+        run: |
+          appium &
+          sleep 3
+
+      - name: Run Appium tests
+        working-directory: ./mobile/appium-tests
+        run: python run_tests.py
+
+      - name: Upload Appium Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Appium-Test-Report
+          path: ./mobile/appium-tests/report.xlsx
+
+  # ────────────────────────────────────────────────
+  # JOB 5: Deploy to GitHub Pages
+  # ────────────────────────────────────────────────
   deploy-gh-pages:
     name: Deploy to GitHub Pages
     needs: selenium-tests
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -95,112 +199,3 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           pnpm run deploy
-
-  appium-tests:
-    name: Appium Mobile Tests Dry-Run
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
-      - name: Install Python dependencies
-        working-directory: ./mobile/appium-tests
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Install global Appium
-        run: npm i -g appium
-
-      - name: Start Appium server
-        run: |
-          appium &
-          echo "APPIUM_PID=$!" >> $GITHUB_ENV
-
-      - name: Run Appium tests
-        working-directory: ./mobile/appium-tests
-        run: python run_tests.py
-
-      - name: Upload Mobile report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mobile-report
-          path: ./mobile/appium-tests/report.xlsx
-
-  generate-report:
-    name: Generate Lifelink Test Reports
-    needs: [selenium-tests, appium-tests]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
-      - name: Install openpyxl
-        run: pip install openpyxl
-
-      - name: Download Selenium report
-        uses: actions/download-artifact@v4
-        with:
-          name: selenium-report
-          path: selenium-report
-        continue-on-error: true
-
-      - name: Download Mobile report
-        uses: actions/download-artifact@v4
-        with:
-          name: mobile-report
-          path: mobile-report
-        continue-on-error: true
-
-      - name: Generate Combined Report
-        run: |
-          python -c '
-          import os
-          import openpyxl
-
-          wb_new = openpyxl.Workbook()
-          default_sheet = wb_new.active
-          wb_new.remove(default_sheet)
-
-          if os.path.exists("selenium-report/report.xlsx"):
-              wb_sel = openpyxl.load_workbook("selenium-report/report.xlsx")
-              for sheet_name in wb_sel.sheetnames:
-                  ws_sel = wb_sel[sheet_name]
-                  ws_new = wb_new.create_sheet(title=f"Web - {sheet_name}")
-                  for row in ws_sel.iter_rows(values_only=True):
-                      ws_new.append(row)
-
-          if os.path.exists("mobile-report/report.xlsx"):
-              wb_mob = openpyxl.load_workbook("mobile-report/report.xlsx")
-              for sheet_name in wb_mob.sheetnames:
-                  ws_mob = wb_mob[sheet_name]
-                  ws_new = wb_new.create_sheet(title=f"Mobile - {sheet_name}")
-                  for row in ws_mob.iter_rows(values_only=True):
-                      ws_new.append(row)
-
-          wb_new.save("lifelink_test_report.xlsx")
-          print("Combined report lifelink_test_report.xlsx generated successfully.")
-          '
-
-      - name: Generate HTML Dashboard Report
-        run: python scripts/generate_dashboard.py
-
-      - name: Upload Combined Reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: Combined-Lifelink-Test-Report
-          path: |
-            lifelink_test_report.xlsx
-            lifelink_test_report.html
