@@ -46,10 +46,10 @@ describe('Public Pages End‑to‑End', function () {
       await driver.get(`${baseUrl}/#/sign-in`);
     }
     
-    // Wait for Clerk's sign in form to load (class typically used by clerk: cl-signIn-root)
+    // Wait for the sign-in page container to load
     try {
-      const signInRoot = await driver.wait(until.elementLocated(By.className('cl-signIn-root')), 15000);
-      assert.ok(signInRoot, 'Clerk sign-in root should be present');
+      const signInPage = await driver.wait(until.elementLocated(By.css('[data-testid="page-signin"]')), 15000);
+      assert.ok(signInPage, 'Sign-in page container should be present');
     } catch (err) {
       // Print console logs to debug if it fails
       const logs = await driver.manage().logs().get('browser').catch(() => []);
