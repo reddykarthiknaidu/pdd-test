@@ -1,0 +1,13 @@
+{
+  "name": "selenium-tests",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "Selenium E2E tests for TrackNova",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "devDependencies": {
+    "mocha": "^10.2.0",
+    "selenium-webdriver": "^4.15.0"
+  }
+}
