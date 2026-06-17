@@ -40,14 +40,22 @@ describe('Public Pages End‑to‑End', function () {
 
   it('should navigate to login page and display login form', async function () {
     try {
-      const loginLink = await driver.findElement(By.id('login-button'));
+      const loginLink = await driver.findElement(By.css('#login-button a'));
       await loginLink.click();
     } catch (e) {
       await driver.get(`${baseUrl}/#/sign-in`);
     }
+    
     // Wait for Clerk's sign in form to load (class typically used by clerk: cl-signIn-root)
-    const signInRoot = await driver.wait(until.elementLocated(By.className('cl-signIn-root')), 15000);
-    assert.ok(signInRoot, 'Clerk sign-in root should be present');
+    try {
+      const signInRoot = await driver.wait(until.elementLocated(By.className('cl-signIn-root')), 15000);
+      assert.ok(signInRoot, 'Clerk sign-in root should be present');
+    } catch (err) {
+      // Print console logs to debug if it fails
+      const logs = await driver.manage().logs().get('browser').catch(() => []);
+      console.error('BROWSER LOGS:', JSON.stringify(logs, null, 2));
+      throw err;
+    }
     
     // Verify url contains sign-in
     const currentUrl = await driver.getCurrentUrl();
