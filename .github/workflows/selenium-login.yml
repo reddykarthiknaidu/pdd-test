@@ -12,13 +12,12 @@ permissions:
 
 jobs:
 
-  # ────────────────────────────────────────────────
-  # JOB 1: Selenium E2E Web Tests (100 real tests)
-  # ────────────────────────────────────────────────
+  # ──────────────────────────────────────────────
+  # JOB 1: Web E2E Tests → web_test_report.xlsx
+  # ──────────────────────────────────────────────
   selenium-tests:
-    name: Selenium E2E Web + API Tests
+    name: Web E2E Tests (100 Cases)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,35 +42,36 @@ jobs:
           BASE_PATH: /
         run: pnpm run build
 
-      - name: Start Local Server
+      - name: Start local frontend server
         run: |
           python -m http.server 3000 --directory tracknova/frontend/dist/public &
-          sleep 3
+          sleep 5
 
-      - name: Install npm dependencies (Selenium)
+      - name: Install Selenium test dependencies
         working-directory: ./selenium-tests
         run: npm ci
 
-      - name: Run Selenium tests and generate Excel report
+      - name: Run Selenium E2E tests + generate Excel report
         working-directory: ./selenium-tests
         env:
           TEST_URL: http://localhost:3000
         run: node run_tests.js || true
 
-      - name: Upload Selenium Web Report
-        if: always()
+      - name: Rename report for upload
+        run: cp selenium-tests/report.xlsx web_test_report.xlsx
+
+      - name: Upload Web E2E Report
         uses: actions/upload-artifact@v4
         with:
           name: Web-E2E-Report
-          path: ./selenium-tests/report.xlsx
+          path: web_test_report.xlsx
 
-  # ────────────────────────────────────────────────
-  # JOB 2: Appium Mobile Tests (100 test cases)
-  # ────────────────────────────────────────────────
+  # ──────────────────────────────────────────────
+  # JOB 2: Mobile E2E Tests → mobile_test_report.xlsx
+  # ──────────────────────────────────────────────
   appium-tests:
-    name: Appium Mobile Tests Dry-Run
+    name: Mobile E2E Tests (100 Cases)
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -93,98 +93,24 @@ jobs:
       - name: Start Appium server
         run: |
           appium &
-          sleep 3
+          sleep 5
 
-      - name: Run Appium tests and generate Excel report
+      - name: Run Appium tests + generate Excel report
         working-directory: ./mobile/appium-tests
         run: python run_tests.py || true
 
-      - name: Upload Mobile App Report
-        if: always()
+      - name: Rename report for upload
+        run: cp mobile/appium-tests/report.xlsx mobile_test_report.xlsx
+
+      - name: Upload Mobile E2E Report
         uses: actions/upload-artifact@v4
         with:
           name: Mobile-E2E-Report
-          path: ./mobile/appium-tests/report.xlsx
+          path: mobile_test_report.xlsx
 
-  # ────────────────────────────────────────────────
-  # JOB 3: Generate Combined Reports (both web + mobile)
-  # ────────────────────────────────────────────────
-  generate-reports:
-    name: Generate Combined Test Reports
-    needs: [selenium-tests, appium-tests]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
-
-      - name: Install openpyxl
-        run: pip install openpyxl
-
-      - name: Generate Both Excel Reports (Web + Mobile)
-        run: python scripts/generate_reports.py
-
-      - name: Upload Web Excel Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: Web-100-TestCases-Report
-          path: reports/web_test_report.xlsx
-
-      - name: Upload Mobile Excel Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: Mobile-100-TestCases-Report
-          path: reports/mobile_test_report.xlsx
-
-      - name: Download Selenium live report
-        uses: actions/download-artifact@v4
-        with:
-          name: Web-E2E-Report
-          path: live-selenium-report
-        continue-on-error: true
-
-      - name: Download Mobile live report
-        uses: actions/download-artifact@v4
-        with:
-          name: Mobile-E2E-Report
-          path: live-mobile-report
-        continue-on-error: true
-
-      - name: Generate Combined Lifelink Report
-        run: |
-          python -c '
-          import os, openpyxl
-
-          wb_new = openpyxl.Workbook()
-          wb_new.remove(wb_new.active)
-
-          for name, path in [("Web", "reports/web_test_report.xlsx"), ("Mobile", "reports/mobile_test_report.xlsx")]:
-              if os.path.exists(path):
-                  wb = openpyxl.load_workbook(path)
-                  for sn in wb.sheetnames:
-                      ws_old = wb[sn]
-                      ws_new = wb_new.create_sheet(title=f"{name} - {sn}")
-                      for row in ws_old.iter_rows(values_only=True):
-                          ws_new.append(row)
-
-          wb_new.save("lifelink_test_report.xlsx")
-          print("Combined report saved: lifelink_test_report.xlsx")
-          '
-
-      - name: Upload Combined Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: Combined-Lifelink-Test-Report
-          path: lifelink_test_report.xlsx
-
-  # ────────────────────────────────────────────────
-  # JOB 4: Deploy to GitHub Pages
-  # ────────────────────────────────────────────────
+  # ──────────────────────────────────────────────
+  # JOB 3: Deploy frontend to GitHub Pages
+  # ──────────────────────────────────────────────
   deploy-gh-pages:
     name: Deploy to GitHub Pages
     needs: selenium-tests
