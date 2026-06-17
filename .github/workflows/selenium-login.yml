@@ -193,8 +193,13 @@ jobs:
           print("Combined report lifelink_test_report.xlsx generated successfully.")
           '
 
-      - name: Upload Combined Report
+      - name: Generate HTML Dashboard Report
+        run: python scripts/generate_dashboard.py
+
+      - name: Upload Combined Reports
         uses: actions/upload-artifact@v4
         with:
           name: Combined-Lifelink-Test-Report
-          path: lifelink_test_report.xlsx
+          path: |
+            lifelink_test_report.xlsx
+            lifelink_test_report.html
