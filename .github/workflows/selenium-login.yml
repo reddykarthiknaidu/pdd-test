@@ -1,0 +1,176 @@
+name: Test & Deploy Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  selenium-tests:
+    name: Selenium E2E Web + API Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: selenium-tests/package-lock.json
+
+      - name: Install npm dependencies
+        working-directory: ./selenium-tests
+        run: npm ci
+
+      - name: Run Selenium tests
+        working-directory: ./selenium-tests
+        run: node run_tests.js
+
+      - name: Upload Selenium report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-report
+          path: ./selenium-tests/report.xlsx
+
+  deploy-gh-pages:
+    name: Deploy to GitHub Pages
+    needs: selenium-tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install dependencies
+        working-directory: ./tracknova
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build frontend
+        working-directory: ./tracknova/frontend
+        run: pnpm run build
+
+      - name: Deploy to GitHub Pages
+        working-directory: ./tracknova/frontend
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          pnpm run deploy
+
+  appium-tests:
+    name: Appium Mobile Tests Dry-Run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install Python dependencies
+        working-directory: ./mobile/appium-tests
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install global Appium
+        run: npm i -g appium
+
+      - name: Start Appium server
+        run: |
+          appium &
+          echo "APPIUM_PID=$!" >> $GITHUB_ENV
+
+      - name: Run Appium tests
+        working-directory: ./mobile/appium-tests
+        run: python run_tests.py
+
+      - name: Upload Mobile report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-report
+          path: ./mobile/appium-tests/report.xlsx
+
+  generate-report:
+    name: Generate Lifelink Test Reports
+    needs: [selenium-tests, appium-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install openpyxl
+        run: pip install openpyxl
+
+      - name: Download Selenium report
+        uses: actions/download-artifact@v4
+        with:
+          name: selenium-report
+          path: selenium-report
+        continue-on-error: true
+
+      - name: Download Mobile report
+        uses: actions/download-artifact@v4
+        with:
+          name: mobile-report
+          path: mobile-report
+        continue-on-error: true
+
+      - name: Generate Combined Report
+        run: |
+          python -c '
+          import os
+          import openpyxl
+
+          wb_new = openpyxl.Workbook()
+          default_sheet = wb_new.active
+          wb_new.remove(default_sheet)
+
+          if os.path.exists("selenium-report/report.xlsx"):
+              wb_sel = openpyxl.load_workbook("selenium-report/report.xlsx")
+              for sheet_name in wb_sel.sheetnames:
+                  ws_sel = wb_sel[sheet_name]
+                  ws_new = wb_new.create_sheet(title=f"Web - {sheet_name}")
+                  for row in ws_sel.iter_rows(values_only=True):
+                      ws_new.append(row)
+
+          if os.path.exists("mobile-report/report.xlsx"):
+              wb_mob = openpyxl.load_workbook("mobile-report/report.xlsx")
+              for sheet_name in wb_mob.sheetnames:
+                  ws_mob = wb_mob[sheet_name]
+                  ws_new = wb_new.create_sheet(title=f"Mobile - {sheet_name}")
+                  for row in ws_mob.iter_rows(values_only=True):
+                      ws_new.append(row)
+
+          wb_new.save("lifelink_test_report.xlsx")
+          print("Combined report lifelink_test_report.xlsx generated successfully.")
+          '
+
+      - name: Upload Combined Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: Combined-Lifelink-Test-Report
+          path: lifelink_test_report.xlsx
