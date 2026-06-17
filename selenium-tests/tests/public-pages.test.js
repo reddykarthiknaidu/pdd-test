@@ -1,5 +1,5 @@
 // selenium-tests/tests/public-pages.test.js
-// Updated Selenium test for the Tracknova web app – uses headless Chrome and correct URLs.
+// Updated Selenium test for the Tracknova web app – uses headless Chrome and dynamic URLs.
 
 const { Builder, By, until } = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
@@ -8,6 +8,7 @@ const assert = require('assert');
 describe('Public Pages End‑to‑End', function () {
   this.timeout(30000); // 30 seconds per test
   let driver;
+  const baseUrl = process.env.TEST_URL || 'https://reddykarthiknaidu.github.io/tracknova';
 
   before(async function () {
     const options = new chrome.Options();
@@ -21,8 +22,8 @@ describe('Public Pages End‑to‑End', function () {
       .setChromeOptions(options)
       .build();
 
-    // Use the actual deployed site URL
-    await driver.get('https://reddykarthiknaidu.github.io/tracknova');
+    // Use the target URL
+    await driver.get(baseUrl);
   });
 
   after(async function () {
@@ -42,7 +43,7 @@ describe('Public Pages End‑to‑End', function () {
       const loginLink = await driver.findElement(By.id('login-link'));
       await loginLink.click();
     } catch (e) {
-      await driver.get('https://reddykarthiknaidu.github.io/tracknova/#/login');
+      await driver.get(`${baseUrl}/#/login`);
     }
     // Wait for email and password fields (generic IDs).
     await driver.wait(until.elementLocated(By.id('email')));

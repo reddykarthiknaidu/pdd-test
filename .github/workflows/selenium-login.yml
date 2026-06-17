@@ -18,15 +18,35 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: selenium-tests/package-lock.json
 
-      - name: Install npm dependencies
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install workspace dependencies
+        working-directory: ./tracknova
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build frontend
+        working-directory: ./tracknova/frontend
+        env:
+          BASE_PATH: /
+        run: pnpm run build
+
+      - name: Start Local Server
+        run: |
+          python -m http.server 3000 --directory tracknova/frontend/dist/public &
+          sleep 3
+
+      - name: Install npm dependencies (Selenium)
         working-directory: ./selenium-tests
         run: npm ci
 
       - name: Run Selenium tests
         working-directory: ./selenium-tests
+        env:
+          TEST_URL: http://localhost:3000
         run: node run_tests.js
 
       - name: Upload Selenium report
