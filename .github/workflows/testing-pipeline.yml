@@ -1,0 +1,75 @@
+name: Test & Deploy Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # 1️⃣ Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2️⃣ Set up Node (for Selenium tests)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 3️⃣ Install Selenium (npm) dependencies
+      - name: Install npm dependencies
+        working-directory: ./selenium-tests
+        run: npm ci
+
+      # 4️⃣ Set up Python (for Appium tests)
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      # 5️⃣ Install Appium (Python) dependencies
+      - name: Install Python dependencies
+        working-directory: ./mobile/appium-tests
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 6️⃣ Install Appium server (npm) – required for Android tests
+      - name: Install global Appium
+        run: npm i -g appium
+
+      # 7️⃣ Start Appium server in background
+      - name: Start Appium server
+        run: |
+          appium &
+          echo "APPIUM_PID=$!" >> $GITHUB_ENV
+
+      # 8️⃣ Run Appium (mobile) test suite
+      - name: Run Appium tests
+        working-directory: ./mobile/appium-tests
+        run: python run_tests.py
+
+      # 9️⃣ Run Selenium (web) test suite
+      - name: Run Selenium tests
+        working-directory: ./selenium-tests
+        run: node run_tests.js
+
+      # 🔟 Collect and upload Excel reports as artifacts
+      - name: Upload Mobile report
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-report
+          path: ./mobile/appium-tests/report.xlsx
+
+      - name: Upload Selenium report
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-report
+          path: ./selenium-tests/report.xlsx
