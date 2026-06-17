@@ -6,31 +6,50 @@ const Excel = require('exceljs');
 async function run() {
   const mocha = new Mocha({ timeout: 60000 });
   mocha.addFile(path.join(__dirname, 'tests', 'public-pages.test.js'));
-  const failures = await new Promise(resolve => mocha.run(resolve));
 
-  // Collect results via a simple reporter (Mocha's JSON reporter could be used)
-  // For brevity, we will assume test files write their own JSON results to ./results.json
-  const fs = require('fs');
-  const resultsPath = path.join(__dirname, 'results.json');
-  let results = [];
-  if (fs.existsSync(resultsPath)) {
-    results = JSON.parse(fs.readFileSync(resultsPath, 'utf8'));
-  }
+  const results = [];
 
-  const workbook = new Excel.Workbook();
-  const sheet = workbook.addWorksheet('Test Report');
-  sheet.columns = [
-    { header: 'Test Case', key: 'test', width: 30 },
-    { header: 'Status', key: 'status', width: 10 },
-    { header: 'Duration (s)', key: 'duration', width: 15 },
-    { header: 'Error Message', key: 'error', width: 40 },
-  ];
-  results.forEach(r => {
-    sheet.addRow({ test: r.title, status: r.state, duration: (r.duration/1000).toFixed(2), error: r.err || '' });
+  const runner = mocha.run(async (failures) => {
+    const workbook = new Excel.Workbook();
+    const sheet = workbook.addWorksheet('Test Report');
+    sheet.columns = [
+      { header: 'Test Case', key: 'test', width: 50 },
+      { header: 'Status', key: 'status', width: 15 },
+      { header: 'Duration (s)', key: 'duration', width: 15 },
+      { header: 'Error Message', key: 'error', width: 50 },
+    ];
+
+    results.forEach(r => {
+      sheet.addRow({ 
+        test: r.title, 
+        status: r.state, 
+        duration: r.duration, 
+        error: r.error 
+      });
+    });
+
+    await workbook.xlsx.writeFile(path.join(__dirname, 'report.xlsx'));
+    console.log('Excel report generated at selenium-tests/report.xlsx');
+    process.exit(failures);
   });
-  await workbook.xlsx.writeFile(path.join(__dirname, 'report.xlsx'));
-  console.log('Excel report generated at selenium-tests/report.xlsx');
-  process.exit(failures);
+
+  runner.on('pass', (test) => {
+    results.push({
+      title: test.fullTitle(),
+      state: 'PASS',
+      duration: (test.duration / 1000).toFixed(2),
+      error: ''
+    });
+  });
+
+  runner.on('fail', (test, err) => {
+    results.push({
+      title: test.fullTitle(),
+      state: 'FAIL',
+      duration: test.duration ? (test.duration / 1000).toFixed(2) : '0.00',
+      error: err.message || 'Unknown Error'
+    });
+  });
 }
 
 run();
