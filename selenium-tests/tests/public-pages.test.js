@@ -1,7 +1,8 @@
 // selenium-tests/tests/public-pages.test.js
-// Updated Selenium test for the Tracknova web app – uses generic checks to avoid missing element IDs.
+// Updated Selenium test for the Tracknova web app – uses headless Chrome and correct URLs.
 
 const { Builder, By, until } = require('selenium-webdriver');
+const chrome = require('selenium-webdriver/chrome');
 const assert = require('assert');
 
 describe('Public Pages End‑to‑End', function () {
@@ -9,13 +10,25 @@ describe('Public Pages End‑to‑End', function () {
   let driver;
 
   before(async function () {
-    driver = await new Builder().forBrowser('chrome').build();
-    // Adjust the base URL to your deployed site or local dev server.
-    await driver.get('https://YOUR_USERNAME.github.io/YOUR_REPO');
+    const options = new chrome.Options();
+    options.addArguments('--headless');
+    options.addArguments('--no-sandbox');
+    options.addArguments('--disable-dev-shm-usage');
+    options.addArguments('--disable-gpu');
+
+    driver = await new Builder()
+      .forBrowser('chrome')
+      .setChromeOptions(options)
+      .build();
+
+    // Use the actual deployed site URL
+    await driver.get('https://reddykarthiknaidu.github.io/tracknova');
   });
 
   after(async function () {
-    await driver.quit();
+    if (driver) {
+      await driver.quit();
+    }
   });
 
   it('should load the home page and have a visible title', async function () {
@@ -25,12 +38,11 @@ describe('Public Pages End‑to‑End', function () {
   });
 
   it('should navigate to login page and display login form', async function () {
-    // Try clicking a login link if it exists, otherwise navigate directly.
     try {
       const loginLink = await driver.findElement(By.id('login-link'));
       await loginLink.click();
     } catch (e) {
-      await driver.get('https://YOUR_USERNAME.github.io/YOUR_REPO/#/login');
+      await driver.get('https://reddykarthiknaidu.github.io/tracknova/#/login');
     }
     // Wait for email and password fields (generic IDs).
     await driver.wait(until.elementLocated(By.id('email')));
