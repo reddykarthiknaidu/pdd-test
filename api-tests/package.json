@@ -1,0 +1,13 @@
+{
+  "name": "api-tests",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "mocha --reporter json --reporter-options output=results.json tests/**/*.test.js",
+    "run": "node run_tests.js"
+  },
+  "devDependencies": {
+    "mocha": "^10.2.0",
+    "exceljs": "^4.4.0"
+  }
+}

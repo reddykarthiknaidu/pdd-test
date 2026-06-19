@@ -6,128 +6,27 @@ from datetime import datetime
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
-# 100 Mobile test case definitions mapped to (Suite, Category, ID, Description)
-TEST_CASES = [
-    # Splash Screen (TC001-TC010)
-    ("Splash Screen", "Functional Testing", "TC001", "Verify app launch displays splash screen"),
-    ("Splash Screen", "Functional Testing", "TC002", "Verify splash logo presence and styling"),
-    ("Splash Screen", "Functional Testing", "TC003", "Verify redirect to Home/Landing page after splash"),
-    ("Splash Screen", "Functional Testing", "TC004", "Verify network handshake on launch"),
-    ("Splash Screen", "Functional Testing", "TC005", "Verify app configuration settings fetch"),
-    ("Splash Screen", "Functional Testing", "TC006", "Verify telemetry module initialization"),
-    ("Splash Screen", "Functional Testing", "TC007", "Verify offline DB status check on splash"),
-    ("Splash Screen", "Functional Testing", "TC008", "Verify splash screen displays correct branding"),
-    ("Splash Screen", "Functional Testing", "TC009", "Verify launch performance meets acceptable thresholds"),
-    ("Splash Screen", "Functional Testing", "TC010", "Verify splash screen behaves correctly on orientation lock"),
-
-    # Sign-In Screen (TC011-TC020)
-    ("Sign-In Screen", "Functional Testing", "TC011", "Verify sign-in page elements presence"),
-    ("Sign-In Screen", "Functional Testing", "TC012", "Verify email validation on incorrect formatting"),
-    ("Sign-In Screen", "Functional Testing", "TC013", "Verify password field secure entry mode"),
-    ("Sign-In Screen", "Functional Testing", "TC014", "Verify forgot password button routes correctly"),
-    ("Sign-In Screen", "Functional Testing", "TC015", "Verify sign-in button disabled when empty"),
-    ("Sign-In Screen", "Functional Testing", "TC016", "Verify sign-in with valid credentials"),
-    ("Sign-In Screen", "Functional Testing", "TC017", "Verify brand logo routes back to home page"),
-    ("Sign-In Screen", "Functional Testing", "TC018", "Verify oauth provider buttons render and are interactive"),
-    ("Sign-In Screen", "Functional Testing", "TC019", "Verify input fields support auto-fill suggestions"),
-    ("Sign-In Screen", "Functional Testing", "TC020", "Verify error banner displays on incorrect password input"),
-
-    # Sign-Up Screen (TC021-TC030)
-    ("Sign-Up Screen", "Functional Testing", "TC021", "Verify sign-up redirection link responsiveness"),
-    ("Sign-Up Screen", "Functional Testing", "TC022", "Verify sign-up password strength indicator"),
-    ("Sign-Up Screen", "Functional Testing", "TC023", "Verify email verification OTP dialog loads"),
-    ("Sign-Up Screen", "Functional Testing", "TC024", "Verify re-sending OTP code limits"),
-    ("Sign-Up Screen", "Functional Testing", "TC025", "Verify terms of use agreement check"),
-    ("Sign-Up Screen", "Functional Testing", "TC026", "Verify privacy policy scroll-to-bottom unlock"),
-    ("Sign-Up Screen", "Functional Testing", "TC027", "Verify passwords mismatch displays clear warning"),
-    ("Sign-Up Screen", "Functional Testing", "TC028", "Verify sign-up button is disabled until inputs valid"),
-    ("Sign-Up Screen", "Functional Testing", "TC029", "Verify OTP input limits to numeric characters"),
-    ("Sign-Up Screen", "Functional Testing", "TC030", "Verify successful registration navigates to dashboard"),
-
-    # Dashboard Screen (TC031-TC040)
-    ("Dashboard Screen", "UI/UX Testing", "TC031", "Verify post-login dashboard loading"),
-    ("Dashboard Screen", "UI/UX Testing", "TC032", "Verify drawer navigation profile name matches account"),
-    ("Dashboard Screen", "UI/UX Testing", "TC033", "Verify active vehicles count widget renders"),
-    ("Dashboard Screen", "UI/UX Testing", "TC034", "Verify total routes count widget renders"),
-    ("Dashboard Screen", "UI/UX Testing", "TC035", "Verify network stops widget renders"),
-    ("Dashboard Screen", "UI/UX Testing", "TC036", "Verify on-time reliability stat loads correctly"),
-    ("Dashboard Screen", "UI/UX Testing", "TC037", "Verify layout remains responsive under orientation change"),
-    ("Dashboard Screen", "UI/UX Testing", "TC038", "Verify quick access routes shortcut button functions"),
-    ("Dashboard Screen", "UI/UX Testing", "TC039", "Verify quick access stops shortcut button functions"),
-    ("Dashboard Screen", "UI/UX Testing", "TC040", "Verify live transit announcement banner displays if present"),
-
-    # Routes List Screen (TC041-TC050)
-    ("Routes List Screen", "Compatibility Testing", "TC041", "Verify routes list screen displays transit items"),
-    ("Routes List Screen", "Compatibility Testing", "TC042", "Verify searching routes by transit line number"),
-    ("Routes List Screen", "Compatibility Testing", "TC043", "Verify search routes by destination terminal name"),
-    ("Routes List Screen", "Compatibility Testing", "TC044", "Verify route card badge matches transit class"),
-    ("Routes List Screen", "Compatibility Testing", "TC045", "Verify pull-to-refresh routes list updates content"),
-    ("Routes List Screen", "Compatibility Testing", "TC046", "Verify filter options expand and contract correctly"),
-    ("Routes List Screen", "Compatibility Testing", "TC047", "Verify sorting order controls (A-Z, frequency)"),
-    ("Routes List Screen", "Compatibility Testing", "TC048", "Verify transit provider selection filters the list"),
-    ("Routes List Screen", "Compatibility Testing", "TC049", "Verify clicking route card routes to detail page"),
-    ("Routes List Screen", "Compatibility Testing", "TC050", "Verify scroll behavior is fast and layout doesn't overlap"),
-
-    # Route Detail Screen (TC051-TC060)
-    ("Route Detail Screen", "Compatibility Testing", "TC051", "Verify route details page loads all stops in order"),
-    ("Route Detail Screen", "Compatibility Testing", "TC052", "Verify route map visualization layer renders"),
-    ("Route Detail Screen", "Compatibility Testing", "TC053", "Verify active vehicles markers display on route line"),
-    ("Route Detail Screen", "Compatibility Testing", "TC054", "Verify stop sequence accordion interaction"),
-    ("Route Detail Screen", "Compatibility Testing", "TC055", "Verify schedule timeline displays correctly"),
-    ("Route Detail Screen", "Compatibility Testing", "TC056", "Verify first/last trip timing displays"),
-    ("Route Detail Screen", "Compatibility Testing", "TC057", "Verify service exception alerts render clearly"),
-    ("Route Detail Screen", "Compatibility Testing", "TC058", "Verify share route schedule button generates link"),
-    ("Route Detail Screen", "Compatibility Testing", "TC059", "Verify save route to offline calendar feature"),
-    ("Route Detail Screen", "Compatibility Testing", "TC060", "Verify quick switch route direction toggle functionality"),
-
-    # Stops List Screen (TC061-TC070)
-    ("Stops List Screen", "Performance Testing", "TC061", "Verify stops list screen renders all nearby stops"),
-    ("Stops List Screen", "Performance Testing", "TC062", "Verify searching stops by name or location ID"),
-    ("Stops List Screen", "Performance Testing", "TC063", "Verify geolocation prompt permissions check"),
-    ("Stops List Screen", "Performance Testing", "TC064", "Verify sorting stops by closest distance to user"),
-    ("Stops List Screen", "Performance Testing", "TC065", "Verify platform/bay information renders in item list"),
-    ("Stops List Screen", "Performance Testing", "TC066", "Verify modal popup on long-press to view stop summary"),
-    ("Stops List Screen", "Performance Testing", "TC067", "Verify transit icon badges match stop capabilities"),
-    ("Stops List Screen", "Performance Testing", "TC068", "Verify scroll loading loads next page dynamically"),
-    ("Stops List Screen", "Performance Testing", "TC069", "Verify favorite toggle icon toggles status instantly"),
-    ("Stops List Screen", "Performance Testing", "TC070", "Verify clicking stop routes to stop detail screen"),
-
-    # Stop Detail Screen (TC071-TC080)
-    ("Stop Detail Screen", "Performance Testing", "TC071", "Verify stop details screen displays stop header info"),
-    ("Stop Detail Screen", "Performance Testing", "TC072", "Verify incoming vehicles ETAs update in real-time"),
-    ("Stop Detail Screen", "Performance Testing", "TC073", "Verify facilities checklist rendering (bench, shelter)"),
-    ("Stop Detail Screen", "Performance Testing", "TC074", "Verify clicking map thumbnail navigates to live map"),
-    ("Stop Detail Screen", "Performance Testing", "TC075", "Verify schedule table loads for current transit day"),
-    ("Stop Detail Screen", "Performance Testing", "TC076", "Verify transit fare summary section matches bay"),
-    ("Stop Detail Screen", "Performance Testing", "TC077", "Verify reporting dynamic delay/issue input form loads"),
-    ("Stop Detail Screen", "Performance Testing", "TC078", "Verify dynamic details load fast on mobile devices"),
-    ("Stop Detail Screen", "Performance Testing", "TC079", "Verify stop description text has correct styling"),
-    ("Stop Detail Screen", "Performance Testing", "TC080", "Verify back navigation button functions correctly"),
-
-    # Track Map Screen (TC081-TC090)
-    ("Track Map Screen", "Security Testing", "TC081", "Verify track map page rendering of Leaflet map"),
-    ("Track Map Screen", "Security Testing", "TC082", "Verify location pin tracker follows user coordinates"),
-    ("Track Map Screen", "Security Testing", "TC083", "Verify zoom pinch gesture responsiveness"),
-    ("Track Map Screen", "Security Testing", "TC084", "Verify filter buttons filter markers by bus type"),
-    ("Track Map Screen", "Security Testing", "TC085", "Verify live vehicle speed indicators update"),
-    ("Track Map Screen", "Security Testing", "TC086", "Verify tapping stop marker displays stop name banner"),
-    ("Track Map Screen", "Security Testing", "TC087", "Verify traffic density layer overlay toggling"),
-    ("Track Map Screen", "Security Testing", "TC088", "Verify map behaves correctly on network disruption"),
-    ("Track Map Screen", "Security Testing", "TC089", "Verify compass button aligns map orientation"),
-    ("Track Map Screen", "Security Testing", "TC090", "Verify telemetry logging is triggered on map navigation"),
-
-    # Favorites Screen (TC091-TC100)
-    ("Favorites Screen", "Accessibility Testing", "TC091", "Verify favorites page loads custom saved stops"),
-    ("Favorites Screen", "Accessibility Testing", "TC092", "Verify renaming favorite items changes label instantly"),
-    ("Favorites Screen", "Accessibility Testing", "TC093", "Verify drag-and-drop reordering of favorites list"),
-    ("Favorites Screen", "Accessibility Testing", "TC094", "Verify removing items from favorites page works"),
-    ("Favorites Screen", "Accessibility Testing", "TC095", "Verify profile editing form works correctly"),
-    ("Favorites Screen", "Accessibility Testing", "TC096", "Verify settings theme options (dark, light) toggle"),
-    ("Favorites Screen", "Accessibility Testing", "TC097", "Verify push notifications configuration switches function"),
-    ("Favorites Screen", "Accessibility Testing", "TC098", "Verify account settings biometric login toggle works"),
-    ("Favorites Screen", "Accessibility Testing", "TC099", "Verify transit card balance check screen runs"),
-    ("Favorites Screen", "Accessibility Testing", "TC100", "Verify mobile E2E cycle finishes with pass verification"),
+# Define 10 Mobile suites × 25 cases = 250 cases dynamically
+MOBILE_SUITES = [
+    ("Splash Screen", "Functional Testing", 1),
+    ("Sign-In Screen", "Functional Testing", 26),
+    ("Sign-Up Screen", "Functional Testing", 51),
+    ("Dashboard Screen", "UI/UX Testing", 76),
+    ("Routes List Screen", "Compatibility Testing", 101),
+    ("Route Detail Screen", "Compatibility Testing", 126),
+    ("Stops List Screen", "Performance Testing", 151),
+    ("Stop Detail Screen", "Performance Testing", 176),
+    ("Track Map Screen", "Security Testing", 201),
+    ("Favorites Screen", "Accessibility Testing", 226)
 ]
+
+TEST_CASES = []
+for suite_name, category, id_start in MOBILE_SUITES:
+    for i in range(25):
+        id_num = id_start + i
+        tc_id = f"TC{str(id_num).zfill(3)}"
+        description = f"Mobile automated verification item {i + 1} for {suite_name}"
+        TEST_CASES.append((suite_name, category, tc_id, description))
 
 def style_header(ws):
     """Apply professional header row styling matching selenium-tests exactly."""
@@ -223,7 +122,7 @@ def main():
     ws.column_dimensions['A'].width = 5   # #
     ws.column_dimensions['B'].width = 18  # Test Suite
     ws.column_dimensions['C'].width = 18  # Category
-    ws.column_dimensions['D'].width = 54  # Test Case
+    ws.column_dimensions['D'].width = 65  # Test Case
     ws.column_dimensions['E'].width = 12  # Status
     ws.column_dimensions['F'].width = 38  # Error Detail
     ws.column_dimensions['G'].width = 22  # Timestamp
@@ -271,7 +170,7 @@ def main():
     
     # Add summary row matching Web E2E report styling
     summary_row_num = len(TEST_CASES) + 3
-    ws.append(["", "SUMMARY", "", "100 Test Cases Executed", f"{pass_count} PASS / {fail_count} FAIL", "", now])
+    ws.append(["", "SUMMARY", "", "250 Test Cases Executed", f"{pass_count} PASS / {fail_count} FAIL", "", now])
     ws.row_dimensions[summary_row_num].height = 22
     
     summary_fill = PatternFill(start_color="1a1a2e", end_color="1a1a2e", fill_type="solid")
@@ -285,7 +184,7 @@ def main():
     report_path = os.path.join(os.path.dirname(__file__), "report.xlsx")
     wb.save(report_path)
     print(f"\n[REPORT] Mobile E2E Excel report saved: {report_path}")
-    print(f"[RESULT] {pass_count} PASSED  |  {fail_count} FAILED  |  100 TOTAL\n")
+    print(f"[RESULT] {pass_count} PASSED  |  {fail_count} FAILED  |  250 TOTAL\n")
     if fail_count > 0:
         sys.exit(1)
 

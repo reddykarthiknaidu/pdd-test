@@ -24,12 +24,23 @@ import StopDetailPage from "@/pages/stop-detail";
 import TrackMapPage from "@/pages/track-map";
 import FavoritesPage from "@/pages/favorites";
 
+console.log("DEBUG: window.location.hostname =", window.location.hostname);
+console.log("DEBUG: VITE_CLERK_PUBLISHABLE_KEY =", import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
+
 const queryClient = new QueryClient();
 
-const clerkPubKey = publishableKeyFromHost(
-  window.location.hostname,
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
-);
+let clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+try {
+  clerkPubKey = publishableKeyFromHost(
+    window.location.hostname,
+    import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
+  ) || import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+} catch (e) {
+  console.warn("publishableKeyFromHost failed:", e);
+}
+
+console.log("DEBUG: clerkPubKey =", clerkPubKey);
+
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -111,10 +122,10 @@ function SignUpPage() {
 function HomeRedirect() {
   return (
     <>
-      <Show when="signed-in">
+      <Show when="signed-in" treatPendingAsSignedOut={true}>
         <Redirect to="/dashboard" />
       </Show>
-      <Show when="signed-out">
+      <Show when="signed-out" treatPendingAsSignedOut={true}>
         <HomePage />
       </Show>
     </>

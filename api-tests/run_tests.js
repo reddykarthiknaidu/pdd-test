@@ -1,5 +1,5 @@
-// selenium-tests/run_tests.js
-// Professional runner: executes all 10 deep test suites (250 tests total)
+// api-tests/run_tests.js
+// Professional runner: executes all 10 API suites (250 tests total)
 // and generates a unified Excel report with coloured pass/fail cells.
 
 const Mocha  = require('mocha');
@@ -9,28 +9,28 @@ const { EVENT_TEST_PASS, EVENT_TEST_FAIL } = Mocha.Runner.constants;
 
 // ─── Test suite metadata (10 suites × 25 = 250 tests) ─────────────────────────
 const SUITE_NAMES = [
-  { idStart: 1,   suite: 'Home Page',         cat: 'Functional' },
-  { idStart: 26,  suite: 'Sign-In Page',      cat: 'Functional' },
-  { idStart: 51,  suite: 'Sign-Up Page',      cat: 'Functional' },
-  { idStart: 76,  suite: 'Dashboard Page',    cat: 'Functional' },
-  { idStart: 101, suite: 'Routes List Page',  cat: 'Functional' },
-  { idStart: 126, suite: 'Route Detail Page', cat: 'Functional' },
-  { idStart: 151, suite: 'Stops List Page',   cat: 'Functional' },
-  { idStart: 176, suite: 'Stop Detail Page',  cat: 'Functional' },
-  { idStart: 201, suite: 'Track Map Page',    cat: 'Functional' },
-  { idStart: 226, suite: 'Favorites & 404',   cat: 'Functional' }
+  { idStart: 1,   suite: 'Health Endpoint',   cat: 'Integration' },
+  { idStart: 26,  suite: 'Dashboard Summary', cat: 'Integration' },
+  { idStart: 51,  suite: 'Routes List',       cat: 'Integration' },
+  { idStart: 76,  suite: 'Route Details',     cat: 'Integration' },
+  { idStart: 101, suite: 'Stops List',        cat: 'Integration' },
+  { idStart: 126, suite: 'Stop Details',      cat: 'Integration' },
+  { idStart: 151, suite: 'Live Vehicles',     cat: 'Integration' },
+  { idStart: 176, suite: 'Favorites',         cat: 'Integration' },
+  { idStart: 201, suite: 'Session Status',    cat: 'Integration' },
+  { idStart: 226, suite: 'Diagnostics',       cat: 'Integration' }
 ];
 
 const SUITE_META = [];
 SUITE_NAMES.forEach(({ idStart, suite, cat }) => {
   for (let i = 0; i < 25; i++) {
     const idNum = idStart + i;
-    const id = `TC${String(idNum).padStart(3, '0')}`;
+    const id = `API${String(idNum).padStart(3, '0')}`;
     SUITE_META.push({
       id: id,
       suite: suite,
       cat: cat,
-      desc: `E2E automated validation item ${i + 1} for ${suite} screen`
+      desc: `API automated validation item ${i + 1} for ${suite}`
     });
   }
 });
@@ -38,7 +38,7 @@ SUITE_NAMES.forEach(({ idStart, suite, cat }) => {
 // ─── Excel report writer ──────────────────────────────────────────────────────
 async function writeExcel(liveResults, outputPath) {
   const wb = new Excel.Workbook();
-  const ws = wb.addWorksheet('Web E2E Test Report');
+  const ws = wb.addWorksheet('API Test Report');
 
   ws.columns = [
     { key: 'num',    width: 5  },
@@ -101,7 +101,7 @@ async function writeExcel(liveResults, outputPath) {
   });
 
   await wb.xlsx.writeFile(outputPath);
-  console.log(`\n[REPORT] Web E2E Excel report saved: ${outputPath}`);
+  console.log(`\n[REPORT] API Excel report saved: ${outputPath}`);
   console.log(`[RESULT] ${pass} PASSED  |  ${fail} FAILED  |  250 TOTAL\n`);
 }
 
@@ -109,19 +109,7 @@ async function writeExcel(liveResults, outputPath) {
 async function run() {
   const mocha = new Mocha({ timeout: 60000 });
 
-  // Add all 10 test suites in order
-  [
-    '01-home.test.js',
-    '02-sign-in.test.js',
-    '03-sign-up.test.js',
-    '04-dashboard.test.js',
-    '05-routes-list.test.js',
-    '06-route-detail.test.js',
-    '07-stops-list.test.js',
-    '08-stop-detail.test.js',
-    '09-track-map.test.js',
-    '10-favorites-and-404.test.js',
-  ].forEach(f => mocha.addFile(path.join(__dirname, 'tests', f)));
+  mocha.addFile(path.join(__dirname, 'tests', 'api.test.js'));
 
   const liveResults = [];
 
