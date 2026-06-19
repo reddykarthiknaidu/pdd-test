@@ -55,7 +55,7 @@ jobs:
         working-directory: ./selenium-tests
         env:
           TEST_URL: http://localhost:3000
-        run: node run_tests.js || true
+        run: node run_tests.js
 
       - name: Copy report for upload
         run: cp selenium-tests/report.xlsx reports/web_test_report.xlsx
@@ -97,7 +97,7 @@ jobs:
 
       - name: Run Appium tests + generate Excel report
         working-directory: ./mobile/appium-tests
-        run: python run_tests.py || true
+        run: python run_tests.py
 
       - name: Copy report for upload
         run: cp mobile/appium-tests/report.xlsx reports/mobile_test_report.xlsx

@@ -235,12 +235,14 @@ async function run() {
 
   class Reporter {
     constructor(runner) {
-      runner.on(EVENT_TEST_PASS, t =>
-        liveResults.push({ title: t.fullTitle(), state: 'PASS', error: '' })
-      );
-      runner.on(EVENT_TEST_FAIL, (t, err) =>
-        liveResults.push({ title: t.fullTitle(), state: 'FAIL', error: err.message || '' })
-      );
+      runner.on(EVENT_TEST_PASS, t => {
+        liveResults.push({ title: t.fullTitle(), state: 'PASS', error: '' });
+        console.log(`[PASS] ${t.parent.title} > ${t.title}`);
+      });
+      runner.on(EVENT_TEST_FAIL, (t, err) => {
+        liveResults.push({ title: t.fullTitle(), state: 'FAIL', error: err.message || '' });
+        console.log(`[FAIL] ${t.parent.title} > ${t.title} - Error: ${err.message || ''}`);
+      });
     }
   }
   mocha.reporter(Reporter);

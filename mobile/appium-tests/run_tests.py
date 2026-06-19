@@ -258,6 +258,9 @@ def main():
         else:
             fail_count += 1
 
+        # Print case status to console for GitHub Actions logs
+        print(f"[{status}] {tc_id}: {description}" + (f" - Error: {error_msg}" if status == "FAIL" else ""))
+
         test_case_label = f"{tc_id}: {description}"
         ws.append([idx, suite, category, test_case_label, status, error_msg, now])
         ws.row_dimensions[idx + 1].height = 18
@@ -283,6 +286,8 @@ def main():
     wb.save(report_path)
     print(f"\n[REPORT] Mobile E2E Excel report saved: {report_path}")
     print(f"[RESULT] {pass_count} PASSED  |  {fail_count} FAILED  |  100 TOTAL\n")
+    if fail_count > 0:
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
