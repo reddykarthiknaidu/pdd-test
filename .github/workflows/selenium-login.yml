@@ -16,7 +16,7 @@ jobs:
   # JOB 1: Web E2E Tests → web_test_report.xlsx
   # ──────────────────────────────────────────────
   selenium-tests:
-    name: Web E2E Tests (250 Cases)
+    name: Web E2E Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -70,7 +70,7 @@ jobs:
   # JOB 2: Mobile E2E Tests → mobile_test_report.xlsx
   # ──────────────────────────────────────────────
   appium-tests:
-    name: Mobile E2E Tests (250 Cases)
+    name: Mobile E2E Tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -197,7 +197,7 @@ jobs:
   # JOB 3.5: API Functional Tests (250 Cases) → api_test_report.xlsx
   # ──────────────────────────────────────────────
   api-tests:
-    name: API Functional Tests (250 Cases)
+    name: API Functional Tests
     runs-on: ubuntu-latest
     services:
       postgres:
