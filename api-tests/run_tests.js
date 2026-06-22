@@ -18,7 +18,11 @@ const SUITE_NAMES = [
   { idStart: 151, suite: 'Live Vehicles',     cat: 'Integration' },
   { idStart: 176, suite: 'Favorites',         cat: 'Integration' },
   { idStart: 201, suite: 'Session Status',    cat: 'Integration' },
-  { idStart: 226, suite: 'Diagnostics',       cat: 'Integration' }
+  { idStart: 226, suite: 'Diagnostics',       cat: 'Integration' },
+  { idStart: 251, suite: 'Settings API',      cat: 'Integration' },
+  { idStart: 276, suite: 'Profile API',       cat: 'Integration' },
+  { idStart: 301, suite: 'Notifications API', cat: 'Integration' },
+  { idStart: 326, suite: 'History API',       cat: 'Integration' }
 ];
 
 const SUITE_META = [];
@@ -91,7 +95,7 @@ async function writeExcel(liveResults, outputPath) {
 
   // Summary row
   ws.addRow([]);
-  const sum = ws.addRow(['', 'SUMMARY', '', '250 Test Cases Executed',
+  const sum = ws.addRow(['', 'SUMMARY', '', '350 Test Cases Executed',
     `${pass} PASS / ${fail} FAIL`, '', now]);
   sum.height = 22;
   sum.eachCell(c => {
@@ -102,7 +106,7 @@ async function writeExcel(liveResults, outputPath) {
 
   await wb.xlsx.writeFile(outputPath);
   console.log(`\n[REPORT] API Excel report saved: ${outputPath}`);
-  console.log(`[RESULT] ${pass} PASSED  |  ${fail} FAILED  |  250 TOTAL\n`);
+  console.log(`[RESULT] ${pass} PASSED  |  ${fail} FAILED  |  350 TOTAL\n`);
 }
 
 // ─── Runner ───────────────────────────────────────────────────────────────────

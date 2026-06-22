@@ -194,7 +194,7 @@ jobs:
             reports/dashboard_load_test.txt
 
   # ──────────────────────────────────────────────
-  # JOB 3.5: API Functional Tests (250 Cases) → api_test_report.xlsx
+  # JOB 3.5: API Functional Tests (350 Cases) → api_test_report.xlsx
   # ──────────────────────────────────────────────
   api-tests:
     name: API Functional Tests

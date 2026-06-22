@@ -38,7 +38,11 @@ MOBILE_SUITES = [
     ("Stops List Screen", 151),
     ("Stop Detail Screen", 176),
     ("Track Map Screen", 201),
-    ("Favorites Screen", 226)
+    ("Favorites Screen", 226),
+    ("Settings Screen", 251),
+    ("Profile Screen", 276),
+    ("Notifications Screen", 301),
+    ("History Screen", 326)
 ]
 
 scenarios = []

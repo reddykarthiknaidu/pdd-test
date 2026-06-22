@@ -17,7 +17,11 @@ MOBILE_SUITES = [
     ("Stops List Screen", "Performance Testing", 151),
     ("Stop Detail Screen", "Performance Testing", 176),
     ("Track Map Screen", "Security Testing", 201),
-    ("Favorites Screen", "Accessibility Testing", 226)
+    ("Favorites Screen", "Accessibility Testing", 226),
+    ("Settings Screen", "Functional Testing", 251),
+    ("Profile Screen", "Functional Testing", 276),
+    ("Notifications Screen", "Functional Testing", 301),
+    ("History Screen", "Functional Testing", 326)
 ]
 
 TEST_CASES = []
@@ -170,7 +174,7 @@ def main():
     
     # Add summary row matching Web E2E report styling
     summary_row_num = len(TEST_CASES) + 3
-    ws.append(["", "SUMMARY", "", "250 Test Cases Executed", f"{pass_count} PASS / {fail_count} FAIL", "", now])
+    ws.append(["", "SUMMARY", "", f"{len(TEST_CASES)} Test Cases Executed", f"{pass_count} PASS / {fail_count} FAIL", "", now])
     ws.row_dimensions[summary_row_num].height = 22
     
     summary_fill = PatternFill(start_color="1a1a2e", end_color="1a1a2e", fill_type="solid")
@@ -184,7 +188,7 @@ def main():
     report_path = os.path.join(os.path.dirname(__file__), "report.xlsx")
     wb.save(report_path)
     print(f"\n[REPORT] Mobile E2E Excel report saved: {report_path}")
-    print(f"[RESULT] {pass_count} PASSED  |  {fail_count} FAILED  |  250 TOTAL\n")
+    print(f"[RESULT] {pass_count} PASSED  |  {fail_count} FAILED  |  {len(TEST_CASES)} TOTAL\n")
     if fail_count > 0:
         sys.exit(1)
 
