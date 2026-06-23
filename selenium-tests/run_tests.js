@@ -22,7 +22,11 @@ const SUITE_NAMES = [
   { idStart: 251, suite: 'Settings Page',      cat: 'Functional' },
   { idStart: 276, suite: 'Profile Page',       cat: 'Functional' },
   { idStart: 301, suite: 'Notifications Page', cat: 'Functional' },
-  { idStart: 326, suite: 'History Page',       cat: 'Functional' }
+  { idStart: 326, suite: 'History Page',       cat: 'Functional' },
+  { idStart: 351, suite: 'Feedback Page',      cat: 'Functional' },
+  { idStart: 376, suite: 'Support Page',       cat: 'Functional' },
+  { idStart: 401, suite: 'Analytics Page',     cat: 'Functional' },
+  { idStart: 426, suite: 'Metrics Page',       cat: 'Functional' }
 ];
 
 const SUITE_META = [];
@@ -95,7 +99,7 @@ async function writeExcel(liveResults, outputPath) {
 
   // Summary row
   ws.addRow([]);
-  const sum = ws.addRow(['', 'SUMMARY', '', '350 Test Cases Executed',
+  const sum = ws.addRow(['', 'SUMMARY', '', '450 Test Cases Executed',
     `${pass} PASS / ${fail} FAIL`, '', now]);
   sum.height = 22;
   sum.eachCell(c => {
@@ -106,7 +110,7 @@ async function writeExcel(liveResults, outputPath) {
 
   await wb.xlsx.writeFile(outputPath);
   console.log(`\n[REPORT] Web E2E Excel report saved: ${outputPath}`);
-  console.log(`[RESULT] ${pass} PASSED  |  ${fail} FAILED  |  350 TOTAL\n`);
+  console.log(`[RESULT] ${pass} PASSED  |  ${fail} FAILED  |  450 TOTAL\n`);
 }
 
 // ─── Runner ───────────────────────────────────────────────────────────────────
@@ -129,6 +133,10 @@ async function run() {
     '12-profile.test.js',
     '13-notifications.test.js',
     '14-history.test.js',
+    '15-feedback.test.js',
+    '16-support.test.js',
+    '17-analytics.test.js',
+    '18-metrics.test.js',
   ].forEach(f => mocha.addFile(path.join(__dirname, 'tests', f)));
 
   const liveResults = [];

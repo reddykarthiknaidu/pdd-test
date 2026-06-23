@@ -21,7 +21,11 @@ MOBILE_SUITES = [
     ("Settings Screen", "Functional Testing", 251),
     ("Profile Screen", "Functional Testing", 276),
     ("Notifications Screen", "Functional Testing", 301),
-    ("History Screen", "Functional Testing", 326)
+    ("History Screen", "Functional Testing", 326),
+    ("Feedback Screen", "Functional Testing", 351),
+    ("Support Screen", "Functional Testing", 376),
+    ("Analytics Screen", "Functional Testing", 401),
+    ("Metrics Screen", "Functional Testing", 426)
 ]
 
 TEST_CASES = []

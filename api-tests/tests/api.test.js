@@ -20,7 +20,11 @@ const ENDPOINTS = [
   { suite: 'Settings API', path: '/api/settings', start: 251 },
   { suite: 'Profile API', path: '/api/profile', start: 276 },
   { suite: 'Notifications API', path: '/api/notifications', start: 301 },
-  { suite: 'History API', path: '/api/history', start: 326 }
+  { suite: 'History API', path: '/api/history', start: 326 },
+  { suite: 'Feedback API', path: '/api/feedback', start: 351 },
+  { suite: 'Support API', path: '/api/support', start: 376 },
+  { suite: 'Analytics API', path: '/api/analytics', start: 401 },
+  { suite: 'Metrics API', path: '/api/metrics', start: 426 }
 ];
 
 ENDPOINTS.forEach(({ suite, path, start }) => {

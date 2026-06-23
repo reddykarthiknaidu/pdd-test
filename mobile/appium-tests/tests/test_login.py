@@ -42,7 +42,11 @@ MOBILE_SUITES = [
     ("Settings Screen", 251),
     ("Profile Screen", 276),
     ("Notifications Screen", 301),
-    ("History Screen", 326)
+    ("History Screen", 326),
+    ("Feedback Screen", 351),
+    ("Support Screen", 376),
+    ("Analytics Screen", 401),
+    ("Metrics Screen", 426)
 ]
 
 scenarios = []
